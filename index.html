@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Coaching i-GROW</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -28,10 +29,22 @@
              background-color: #eef2ff;
         }
 
+        .main-content-bg-dark {
+             background-color: #0f172a;
+             background-image: radial-gradient(circle at 1px 1px, #1e293b 1px, transparent 0);
+             background-size: 20px 20px;
+        }
+
         .tab-link.active {
             border-color: #4f46e5;
             color: #4f46e5;
             font-weight: 600;
+        }
+        
+        .tab-link.disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: transparent;
         }
 
         .accordion-content {
@@ -42,6 +55,17 @@
         
         .page-content {
             animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .stat-card {
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: #4f46e5;
+            transform: translateY(-5px);
         }
 
         @keyframes fadeIn {
@@ -89,7 +113,7 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div id="main-content" class="flex-1 flex flex-col overflow-hidden">
             <!-- Header -->
             <header class="bg-white shadow-sm p-4 flex justify-between items-center">
                  <h1 id="page-title" class="text-2xl font-bold text-gray-700">Dashboard</h1>
@@ -103,39 +127,10 @@
                  </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-8">
+            <main id="main-panel" class="flex-1 overflow-y-auto p-8">
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page-content">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <!-- Stat Cards rendered by JS -->
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
-                            <h2 class="text-xl font-bold mb-4">Senarai Coachee Terkini</h2>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left">
-                                    <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
-                                        <tr>
-                                            <th class="p-3">Nama Pegawai</th>
-                                            <th class="p-3">Sekolah</th>
-                                            <th class="p-3">Status Semasa</th>
-                                            <th class="p-3"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dashboard-coachee-list">
-                                        <!-- Coachee list rendered by JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-md">
-                             <h2 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-book-reader mr-3 text-indigo-500"></i>Bahan Rujukan</h2>
-                             <div id="accordion-container" class="space-y-2">
-                                <!-- Accordion items rendered by JS -->
-                             </div>
-                        </div>
-                    </div>
+                    <!-- Dashboard content rendered by JS -->
                 </div>
 
                 <!-- Senarai Coachee Page -->
@@ -234,30 +229,27 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- DATA ---
-            const coacheeData = [
+            let coacheeData = [
                 { id: 1, name: 'Siti Nurhaliza', avatar: 'S', school: 'SK Jalan Bintang', position: 'Guru', sessions: [ { status: 'Selesai', date: '2024-03-15'}, { status: 'Selesai', date: '2024-04-01'}, { status: 'Selesai', date: '2024-04-20'} ] },
                 { id: 2, name: 'Mohd Fairuz', avatar: 'M', school: 'SK Riam Batu Dua', position: 'Juruteknik Komputer', sessions: [ { status: 'Selesai', date: '2024-05-10'}, { status: 'Belum Selesai', date: '2024-05-25'}, { status: 'Akan Datang', date: ''} ] },
                 { id: 3, name: 'Lee Chong Wei', avatar: 'L', school: 'SMK Lutong', position: 'Pembantu Tadbir', sessions: [ { status: 'Belum Mula', date: ''}, { status: 'Akan Datang', date: ''}, { status: 'Akan Datang', date: ''} ] },
-                { id: 4, name: 'Aina Abdul', avatar: 'A', school: 'SK Tudan', position: 'Guru Muzik', sessions: [ { status: 'Selesai', date: '2024-06-01'}, { status: 'Akan Datang', date: ''}, { status: 'Akan Datang', date: ''} ] },
+                { id: 4, name: 'Aina Abdul', avatar: 'A', school: 'SK Tudan', position: 'Guru Muzik', sessions: [ { status: 'Selesai', date: '2024-06-01'}, { status: 'Belum Selesai', date: '2024-06-15'}, { status: 'Akan Datang', date: ''} ] },
             ];
             
-            const accordionData = [
-                { title: '1.0 Pengenalan Coaching', content: ['1.1 Pengenalan Coaching', '1.2 Konsep & Peranan', '1.3 Proses Coaching', '1.4 Model Coaching', '1.5 Kemahiran Coaching'], icon: 'fa-book-open' },
-                { title: '2.0 Panduan Proses Coaching', content: ['2.1 Etika Coaching', '2.2 Perancangan', '2.3 Pelaksanaan', '2.4 Rekod Hasil'], icon: 'fa-sticky-note' }
-            ];
-
             const pageTitles = {
-                'dashboard': 'Dashboard',
+                'dashboard': 'Dashboard Kawalan i-GROW',
                 'senarai': 'Senarai Penuh Coachee',
                 'sesi-bimbingan': 'Sesi Bimbingan',
                 'edit-profil': 'Edit Profil Saya'
             };
 
+            // --- CHART INSTANCE ---
+            let coacheeChart = null;
+
             // --- DOM ELEMENTS ---
+            const mainPanelEl = document.getElementById('main-panel');
             const pageTitleEl = document.getElementById('page-title');
-            const dashboardCoacheeListEl = document.getElementById('dashboard-coachee-list');
             const fullCoacheeListTableEl = document.getElementById('full-coachee-list-table');
-            const accordionContainerEl = document.getElementById('accordion-container');
             const searchInputEl = document.getElementById('searchInput');
 
             // --- STATUS BADGE HELPER ---
@@ -273,59 +265,124 @@
             
             // --- RENDER FUNCTIONS ---
             function renderDashboard() {
-                // Render Stats
-                const statsContainer = document.querySelector('#dashboard-page .grid');
+                const dashboardContainer = document.getElementById('dashboard-page');
+                mainPanelEl.classList.add('main-content-bg-dark');
+                
+                // --- Dashboard Stats Calculations ---
                 const totalCoachees = coacheeData.length;
                 const completedCoachees = coacheeData.filter(c => c.sessions.every(s => s.status === 'Selesai')).length;
-                const inProgressCoachees = totalCoachees - completedCoachees;
-                const completionPercentage = totalCoachees > 0 ? ((completedCoachees / totalCoachees) * 100).toFixed(1) : 0;
+                const inProgressCoachees = coacheeData.filter(c => {
+                    const completed = c.sessions.filter(s => s.status === 'Selesai').length;
+                    return completed > 0 && completed < c.sessions.length;
+                }).length;
+                const notStartedCoachees = totalCoachees - completedCoachees - inProgressCoachees;
+                const upcomingAppointments = coacheeData.filter(c => c.sessions.some(s => s.status === 'Belum Selesai')).length;
 
-                statsContainer.innerHTML = `
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 flex items-center justify-between"><div><div class="text-sm font-bold text-blue-500 uppercase">Jumlah Coachee</div><div class="text-2xl font-bold mt-1">${totalCoachees} Orang</div></div><i class="fas fa-users fa-2x text-gray-200"></i></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500 flex items-center justify-between"><div><div class="text-sm font-bold text-yellow-500 uppercase">Dalam Proses</div><div class="text-2xl font-bold mt-1">${inProgressCoachees} Orang</div></div><i class="fas fa-comments fa-2x text-gray-200"></i></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 flex items-center justify-between"><div><div class="text-sm font-bold text-green-500 uppercase">Selesai Penuh</div><div class="text-2xl font-bold mt-1">${completedCoachees} Orang</div></div><i class="fas fa-thumbs-up fa-2x text-gray-200"></i></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-teal-500">
-                        <div class="text-sm font-bold text-teal-500 uppercase">Peratusan Selesai</div>
-                        <div class="flex items-center mt-2"><div class="text-2xl font-bold mr-3">${completionPercentage}%</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-teal-500 h-2.5 rounded-full" style="width: ${completionPercentage}%"></div></div></div>
-                    </div>`;
+                const today = new Date();
+                const dateString = today.toLocaleDateString('ms-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-                // Render Coachee List (Top 3)
-                dashboardCoacheeListEl.innerHTML = coacheeData.slice(0, 3).map(coachee => {
-                     const currentStatus = coachee.sessions.find(s => s.status !== 'Selesai' && s.status !== 'Akan Datang') || coachee.sessions.find(s => s.status === 'Akan Datang') || { status: 'Selesai' };
-                     return `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="p-3 font-medium flex items-center"><img src="https://placehold.co/32x32/94a3b8/ffffff?text=${coachee.avatar}" class="w-8 h-8 rounded-full mr-3">${coachee.name}</td>
-                            <td class="p-3 text-gray-600">${coachee.school}</td>
-                            <td class="p-3">${getStatusBadge(currentStatus.status)}</td>
-                            <td class="p-3 text-right"><button class="text-indigo-600 hover:underline font-semibold text-xs go-to-sesi" data-id="${coachee.id}">LIHAT</button></td>
-                        </tr>`;
-                }).join('');
-                
-                // BAHAN RUJUKAN UPDATED HERE
-                accordionContainerEl.innerHTML = accordionData.map(item => `
-                    <div class="border rounded-lg overflow-hidden">
-                        <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold hover:bg-gray-50 transition">
-                            <span>${item.title}</span>
-                            <i class="fas fa-chevron-down transition-transform"></i>
-                        </button>
-                        <div class="accordion-content bg-gray-50/70">
-                            <div class="p-4 space-y-2">
-                                ${item.content.map(li => `
-                                    <a href="#" class="flex items-center p-2 rounded-md hover:bg-indigo-100/50 transition-colors group">
-                                        <i class="fas fa-file-alt fa-fw text-indigo-400 group-hover:text-indigo-600"></i>
-                                        <span class="ml-3 text-sm text-gray-700">${li}</span>
-                                    </a>
-                                `).join('')}
-                            </div>
-                            <div class="px-4 pb-4 mt-2">
-                                <a href="#" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 font-semibold shadow-sm transition">
-                                    <i class="fas ${item.icon} mr-2"></i>
-                                    <span>Lihat Panduan Penuh</span>
-                                </a>
+                dashboardContainer.innerHTML = `
+                    <div class="text-slate-200 mb-8">
+                        <h1 class="text-3xl font-bold">Selamat Kembali, Ahmad!</h1>
+                        <p class="text-slate-400 mt-1">Hari ini ${dateString}. Berikut adalah ringkasan aktiviti coaching anda.</p>
+                    </div>
+
+                    <!-- Stat Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card rounded-xl p-5 text-white">
+                            <div class="flex items-center"><div class="p-3 rounded-full bg-sky-500/20"><i class="fas fa-users fa-lg text-sky-400"></i></div></div>
+                            <h3 class="text-3xl font-bold mt-4">${totalCoachees}</h3>
+                            <p class="text-slate-400">Jumlah Coachee</p>
+                        </div>
+                         <div class="stat-card rounded-xl p-5 text-white">
+                            <div class="flex items-center"><div class="p-3 rounded-full bg-green-500/20"><i class="fas fa-check-double fa-lg text-green-400"></i></div></div>
+                            <h3 class="text-3xl font-bold mt-4">${completedCoachees}</h3>
+                            <p class="text-slate-400">Selesai Penuh</p>
+                        </div>
+                        <div class="stat-card rounded-xl p-5 text-white">
+                            <div class="flex items-center"><div class="p-3 rounded-full bg-yellow-500/20"><i class="fas fa-tasks fa-lg text-yellow-400"></i></div></div>
+                            <h3 class="text-3xl font-bold mt-4">${inProgressCoachees}</h3>
+                            <p class="text-slate-400">Dalam Proses</p>
+                        </div>
+                        <div class="stat-card rounded-xl p-5 text-white">
+                            <div class="flex items-center"><div class="p-3 rounded-full bg-violet-500/20"><i class="fas fa-calendar-alt fa-lg text-violet-400"></i></div></div>
+                            <h3 class="text-3xl font-bold mt-4">${upcomingAppointments}</h3>
+                            <p class="text-slate-400">Janji Temu Aktif</p>
+                        </div>
+                    </div>
+
+                    <!-- Main Chart & Tasks -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 stat-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Status Keseluruhan Coachee</h3>
+                            <div class="h-80"><canvas id="coacheeStatusChart"></canvas></div>
+                        </div>
+                        <div class="stat-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Jadual & Notifikasi</h3>
+                            <div id="task-list" class="space-y-4">
+                                <!-- Tasks rendered here -->
                             </div>
                         </div>
-                    </div>`).join('');
-                addAccordionListeners();
+                    </div>
+                `;
+                
+                // --- Render Chart ---
+                const ctx = document.getElementById('coacheeStatusChart').getContext('2d');
+                if (coacheeChart) {
+                    coacheeChart.destroy();
+                }
+                coacheeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Selesai', 'Dalam Proses', 'Belum Mula'],
+                        datasets: [{
+                            label: 'Jumlah Coachee',
+                            data: [completedCoachees, inProgressCoachees, notStartedCoachees],
+                            backgroundColor: ['#22c55e80', '#f59e0b80', '#ef444480'],
+                            borderColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#334155' },
+                                ticks: { color: '#94a3b8', stepSize: 1 }
+                            },
+                            x: {
+                                grid: { color: 'transparent' },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+
+                // --- Render Task List ---
+                const taskListEl = document.getElementById('task-list');
+                const upcomingTasks = coacheeData
+                    .filter(c => c.sessions.some(s => s.status === 'Belum Selesai'))
+                    .slice(0, 4); // Limit to 4 tasks
+
+                if (upcomingTasks.length > 0) {
+                     taskListEl.innerHTML = upcomingTasks.map(task => `
+                        <div class="flex items-center p-3 bg-slate-800/50 rounded-lg">
+                             <img src="https://placehold.co/32x32/94a3b8/ffffff?text=${task.avatar}" class="w-8 h-8 rounded-full mr-3">
+                             <div>
+                                <p class="text-sm font-medium text-slate-200">Sesi Seterusnya: ${task.name}</p>
+                                <p class="text-xs text-slate-400">${task.school}</p>
+                             </div>
+                             <button class="ml-auto text-indigo-400 hover:text-indigo-300 go-to-sesi" data-id="${task.id}"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                     `).join('');
+                } else {
+                    taskListEl.innerHTML = `<div class="text-center py-10"><i class="fas fa-check-circle text-green-500 text-3xl"></i><p class="mt-2 text-slate-400">Tiada janji temu aktif.</p></div>`;
+                }
+
             }
 
             function renderCoacheeListPage(data) {
@@ -344,27 +401,65 @@
                 if (!coachee) return;
                 
                 const sesiPageContainer = document.getElementById('sesi-bimbingan-page');
+                const totalSessions = coachee.sessions.length;
+                const completedSessions = coachee.sessions.filter(s => s.status === 'Selesai').length;
+                const progress = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+                const circumference = 2 * Math.PI * 54;
+                const offset = circumference - (progress / 100) * circumference;
+
+                let activeTabIndex = coachee.sessions.findIndex(s => s.status !== 'Selesai');
+                if (activeTabIndex === -1) activeTabIndex = 0;
+
+                const tabsHTML = coachee.sessions.map((s, i) => {
+                    const isLocked = i > 0 && coachee.sessions[i - 1].status !== 'Selesai';
+                    const isCompleted = s.status === 'Selesai';
+                    const isActive = i === activeTabIndex && !isLocked;
+
+                    let tabClasses = 'tab-link flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition';
+                    let iconHTML = '';
+
+                    if (isLocked) { tabClasses += ' disabled'; iconHTML = '<i class="fas fa-lock ml-2"></i>'; } 
+                    else if (isCompleted) { tabClasses += ' text-green-600'; iconHTML = '<i class="fas fa-check-circle ml-2 text-green-500"></i>'; }
+                    
+                    if (isActive) { tabClasses += ' active'; }
+
+                    return `<a href="#" class="${tabClasses}" data-tab="${i+1}">Sesi ${i+1} ${iconHTML}</a>`;
+                }).join('');
+
                 sesiPageContainer.innerHTML = `
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-xl shadow-2xl p-6 md:p-8 mb-8">
+                         <div class="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+                            <div class="flex-shrink-0 text-center">
+                                <img src="https://placehold.co/100x100/c7d2fe/3730a3?text=${coachee.avatar}" alt="Avatar" class="w-24 h-24 rounded-full ring-4 ring-slate-700/50">
+                                <h2 class="text-2xl font-bold mt-4">${coachee.name}</h2>
+                                <p class="text-indigo-300 font-medium">${coachee.position}</p>
+                            </div>
+                            <div class="w-full border-t md:border-t-0 md:border-l border-slate-700 pt-6 md:pt-0 md:pl-8">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div class="space-y-4">
+                                        <h3 class="text-lg font-semibold text-slate-300 border-b border-slate-700 pb-2">Butiran Lanjut</h3>
+                                        <div class="flex items-center text-sm"><i class="fas fa-envelope fa-fw w-5 text-indigo-400"></i><span class="ml-3 text-slate-300">${coachee.name.toLowerCase().replace(/ /g, '.')}@example.com</span></div>
+                                        <div class="flex items-center text-sm"><i class="fas fa-building fa-fw w-5 text-indigo-400"></i><span class="ml-3 text-slate-300">${coachee.school}</span></div>
+                                        <div class="flex items-center text-sm"><i class="fas fa-info-circle fa-fw w-5 text-indigo-400"></i><span class="ml-3 text-slate-300">Status Aktif</span></div>
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center bg-slate-800/50 rounded-lg p-4">
+                                        <h3 class="text-lg font-semibold text-slate-300 mb-3">Kemajuan Sesi</h3>
+                                        <div class="relative w-32 h-32">
+                                            <svg class="w-full h-full" viewBox="0 0 120 120"><circle class="text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="54" cx="60" cy="60"/><circle class="text-indigo-500" stroke-width="8" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="54" cx="60" cy="60" transform="rotate(-90 60 60)"/></svg>
+                                            <span class="absolute text-2xl font-bold inset-0 flex items-center justify-center">${Math.round(progress)}%</span>
+                                        </div>
+                                        <p class="text-sm mt-3 text-slate-400">${completedSessions} / ${totalSessions} Sesi Selesai</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="bg-white p-6 rounded-xl shadow-md">
-                        <h2 class="text-xl font-bold mb-1">Maklumat Coachee</h2>
-                        <p class="text-gray-500 mb-4">Borang Pelaporan Bimbingan untuk ${coachee.name}</p>
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-6 bg-gray-50 p-4 rounded-lg">
-                            <p><strong>Nama Pegawai:</strong> ${coachee.name}</p>
-                            <p><strong>Stesen Kerja:</strong> ${coachee.school}</p>
-                            <p><strong>Jawatan:</strong> ${coachee.position}</p>
-                            <p><strong>Emel:</strong> ${coachee.name.toLowerCase().replace(' ', '.')}@example.com</p>
-                        </div>
-
-                        <div class="border-b border-gray-200">
-                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                                ${coachee.sessions.map((s, i) => `<a href="#" class="tab-link ${i===0 ? 'active' : ''} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="${i+1}">Sesi ${i+1}</a>`).join('')}
-                            </nav>
-                        </div>
-
+                        <div class="border-b border-gray-200"><nav class="-mb-px flex space-x-8" aria-label="Tabs">${tabsHTML}</nav></div>
                         <div class="mt-6">
                             ${coachee.sessions.map((s, i) => `
-                            <div id="tab-${i+1}-content" class="tab-content ${i > 0 ? 'hidden':''}">
-                                <form class="space-y-6">
+                            <div id="tab-${i+1}-content" class="tab-content ${i !== activeTabIndex ? 'hidden':''}">
+                                <form class="space-y-6" data-coachee-id="${coacheeId}" data-session-index="${i}">
                                      <h3 class="font-bold text-lg text-gray-700">Borang Pelaporan Bimbingan Sesi ${i+1}</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div><label class="block text-sm font-medium text-gray-700 mb-1">Tarikh</label><input type="date" value="${s.date}" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
@@ -373,22 +468,33 @@
                                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Isu / Topik (Model GROW)</label><textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea></div>
                                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Refleksi Kendiri Coach</label><textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea></div>
                                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Status Sesi</label><select class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option>${s.status}</option><option>Selesai</option><option>Belum Selesai</option></select></div>
+                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Status Sesi</label><select name="sessionStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option value="${s.status}" selected>${s.status}</option><option value="Selesai">Selesai</option><option value="Belum Selesai">Belum Selesai</option></select></div>
                                         <div><label class="block text-sm font-medium text-gray-700 mb-1">Janji Temu Seterusnya</label><input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
                                     </div>
-                                    <div class="flex justify-end space-x-4 pt-4 border-t"><button type="button" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold">Isi Semula</button><button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-semibold">Hantar</button></div>
+                                    <div class="flex justify-end space-x-4 pt-4 border-t"><button type="button" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold">Isi Semula</button><button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-semibold">Hantar & Kemaskini</button></div>
                                 </form>
                             </div>`).join('')}
                         </div>
                     </div>
                 `;
                 addTabListeners('#sesi-bimbingan-page');
+                addFormSubmitListener();
             }
 
             // --- NAVIGATION & EVENT LISTENERS ---
             function switchPage(pageId, coacheeId = null) {
+                // Handle background switching
+                if (pageId === 'dashboard') {
+                    mainPanelEl.classList.add('main-content-bg-dark');
+                    mainPanelEl.classList.remove('bg-gray-100');
+                } else {
+                    mainPanelEl.classList.remove('main-content-bg-dark');
+                    mainPanelEl.classList.add('bg-gray-100');
+                }
+
                 document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-                document.getElementById(pageId + '-page').classList.remove('hidden');
+                const targetPage = document.getElementById(pageId + '-page');
+                targetPage.classList.remove('hidden');
 
                 document.querySelectorAll('.sidebar-link').forEach(l => {
                     l.classList.remove('active');
@@ -397,54 +503,58 @@
                 
                 pageTitleEl.textContent = pageTitles[pageId] || 'Sistem Coaching';
 
-                if (pageId === 'sesi-bimbingan' && coacheeId) {
-                   renderSesiPage(coacheeId);
+                if (pageId === 'dashboard') renderDashboard();
+                if (pageId === 'sesi-bimbingan' && coacheeId) renderSesiPage(coacheeId); 
+                else if (pageId === 'sesi-bimbingan' && !coacheeId) {
+                    const sesiPageContainer = document.getElementById('sesi-bimbingan-page');
+                    sesiPageContainer.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-md text-center"><h2 class="text-xl font-bold">Sila Pilih Coachee</h2><p class="text-gray-600 mt-2">Pilih seorang coachee daripada halaman 'Senarai Coachee' untuk melihat sesi bimbingan.</p></div>`;
                 }
             }
 
-            function addAccordionListeners() {
-                document.querySelectorAll('.accordion-header').forEach(header => {
-                    header.addEventListener('click', function() {
-                        const content = this.nextElementSibling;
-                        const icon = this.querySelector('i');
-                        const isOpen = content.style.maxHeight;
-
-                        // Close all first
-                        document.querySelectorAll('.accordion-content').forEach(c => {
-                             c.style.maxHeight = null;
-                             c.previousElementSibling.querySelector('i').classList.remove('rotate-180');
-                        });
-                        
-                        if (!isOpen) {
-                            content.style.maxHeight = content.scrollHeight + "px";
-                            icon.classList.add('rotate-180');
-                        }
-                    });
-                });
-            }
-            
             function addTabListeners(containerSelector) {
                 const container = document.querySelector(containerSelector);
-                container.querySelectorAll('.tab-link').forEach(link => {
-                    link.addEventListener('click', function(e) {
+                if (!container) return;
+                container.addEventListener('click', function(e) {
+                    const link = e.target.closest('.tab-link');
+                    if (link) {
                         e.preventDefault();
-                        const tabId = this.dataset.tab;
+                        if (link.classList.contains('disabled')) return;
+
+                        const tabId = link.dataset.tab;
                         container.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
                         container.querySelector('#tab-' + tabId + '-content').classList.remove('hidden');
                         container.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-                        this.classList.add('active');
-                    });
+                        link.classList.add('active');
+                    }
                 });
             }
 
+            function addFormSubmitListener() {
+                const form = document.querySelector('#sesi-bimbingan-page form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const coacheeId = this.dataset.coacheeId;
+                        const sessionIndex = parseInt(this.dataset.sessionIndex, 10);
+                        const newStatus = this.querySelector('select[name="sessionStatus"]').value;
+                        const coachee = coacheeData.find(c => c.id == coacheeId);
+                        if(coachee) {
+                            coachee.sessions[sessionIndex].status = newStatus;
+                            renderSesiPage(coacheeId);
+                        }
+                    });
+                }
+            }
+
             // --- INITIALIZATION ---
-            renderDashboard();
-            renderCoacheeListPage(coacheeData);
+            renderCoacheeListPage(coacheeData); // Render other pages in background
+            switchPage('dashboard'); // Start on dashboard
 
             document.querySelector('.sidebar').addEventListener('click', e => {
-                if (e.target.closest('.sidebar-link')) {
+                const link = e.target.closest('.sidebar-link');
+                if (link) {
                     e.preventDefault();
-                    switchPage(e.target.closest('.sidebar-link').dataset.page);
+                    switchPage(link.dataset.page);
                 }
             });
 
