@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Coaching i-GROW</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .sidebar {
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-link.active {
+            background-color: #4f46e5;
+            color: white;
+            border-left: 4px solid #a78bfa;
+        }
+        
+        .sidebar-link:not(.active):hover {
+             background-color: #eef2ff;
+        }
+
+        .tab-link.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .page-content {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 bg-white shadow-lg flex-shrink-0 flex flex-col">
+            <div class="p-8 bg-white flex items-center justify-center border-b">
+                <img src="https://i.imgur.com/3Qqm5jN.png" alt="i-GROW Logo" class="h-24">
+            </div>
+            <nav class="mt-4 flex-1">
+                <a href="#" class="sidebar-link active flex items-center py-3 px-6 text-gray-700 transition duration-200" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt fa-fw w-6"></i>
+                    <span class="ml-4">Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center py-3 px-6 text-gray-700 transition duration-200" data-page="senarai">
+                    <i class="fas fa-users fa-fw w-6"></i>
+                    <span class="ml-4">Senarai Coachee</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center py-3 px-6 text-gray-700 transition duration-200" data-page="sesi-bimbingan">
+                    <i class="fas fa-chalkboard-teacher fa-fw w-6"></i>
+                    <span class="ml-4">Sesi Bimbingan</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center py-3 px-6 text-gray-700 transition duration-200" data-page="edit-profil">
+                    <i class="fas fa-user-edit fa-fw w-6"></i>
+                    <span class="ml-4">Profil Saya</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                 <div class="flex items-center">
+                    <img src="https://placehold.co/40x40/667eea/ffffff?text=A" alt="Avatar" class="h-10 w-10 rounded-full">
+                    <div class="ml-3">
+                        <p class="text-sm font-semibold">Ahmad Kassim</p>
+                        <p class="text-xs text-gray-500">Coach</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+                 <h1 id="page-title" class="text-2xl font-bold text-gray-700">Dashboard</h1>
+                 <div class="flex items-center space-x-4">
+                     <button class="text-gray-500 hover:text-gray-700">
+                         <i class="fas fa-bell"></i>
+                     </button>
+                     <button class="text-gray-500 hover:text-gray-700">
+                         <i class="fas fa-cog"></i>
+                     </button>
+                 </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-8">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Stat Cards rendered by JS -->
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
+                            <h2 class="text-xl font-bold mb-4">Senarai Coachee Terkini</h2>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                                        <tr>
+                                            <th class="p-3">Nama Pegawai</th>
+                                            <th class="p-3">Sekolah</th>
+                                            <th class="p-3">Status Semasa</th>
+                                            <th class="p-3"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-coachee-list">
+                                        <!-- Coachee list rendered by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                             <h2 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-book-reader mr-3 text-indigo-500"></i>Bahan Rujukan</h2>
+                             <div id="accordion-container" class="space-y-2">
+                                <!-- Accordion items rendered by JS -->
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Senarai Coachee Page -->
+                <div id="senarai-page" class="page-content hidden">
+                     <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                            <div class="relative w-full md:w-1/3">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                                <input id="searchInput" type="text" placeholder="Cari coachee..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <button class="w-full md:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"><i class="fas fa-plus mr-2"></i>Tambah Coachee Baru</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                                    <tr>
+                                        <th class="p-3">#</th>
+                                        <th class="p-3">Nama Pegawai</th>
+                                        <th class="p-3">Sekolah</th>
+                                        <th class="p-3">Sesi 1</th>
+                                        <th class="p-3">Sesi 2</th>
+                                        <th class="p-3">Sesi 3</th>
+                                        <th class="p-3 text-center">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="full-coachee-list-table">
+                                    <!-- Full coachee list rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Profil Page -->
+                <div id="edit-profil-page" class="page-content hidden">
+                     <div class="bg-white p-8 rounded-xl shadow-md max-w-4xl mx-auto">
+                        <form class="space-y-6">
+                            <div class="flex items-center space-x-6 pb-6 border-b">
+                                <img src="https://placehold.co/96x96/667eea/ffffff?text=A" alt="Profile Picture" class="h-24 w-24 rounded-full object-cover ring-4 ring-indigo-100">
+                                <div>
+                                    <h3 class="text-xl font-bold">Ahmad Bin Kassim</h3>
+                                    <p class="text-gray-500">ahmad.kassim@example.com</p>
+                                    <label for="foto" class="mt-2 cursor-pointer inline-block bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        <span>Tukar Gambar</span>
+                                        <input id="foto" type="file" class="sr-only">
+                                    </label>
+                                </div>
+                            </div>
+                        
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Penuh</label>
+                                    <input type="text" id="name" value="Ahmad Bin Kassim" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label for="jawatan" class="block text-sm font-medium text-gray-700 mb-1">Jawatan</label>
+                                    <select id="jawatan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option selected>School Improvement Specialist Coaches (SISC+)</option>
+                                        <option>Guru Besar</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="namasekolah" class="block text-sm font-medium text-gray-700 mb-1">Stesen Bertugas</label>
+                                    <select id="namasekolah" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option selected>PPD Miri</option>
+                                        <option>SK Jalan Bintang</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="tahun_kerja" class="block text-sm font-medium text-gray-700 mb-1">Tempoh Perkhidmatan (Tahun)</label>
+                                    <input type="number" id="tahun_kerja" value="12" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="opsyen" class="block text-sm font-medium text-gray-700 mb-1">Opsyen</label>
+                                    <input type="text" id="opsyen" value="Bahasa Melayu" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            <div class="mt-8 text-right">
+                                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-semibold transition">Kemaskini Profil</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Sesi Bimbingan Page -->
+                <div id="sesi-bimbingan-page" class="page-content hidden">
+                    <!-- Sesi content will be rendered by JS -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DATA ---
+            const coacheeData = [
+                { id: 1, name: 'Siti Nurhaliza', avatar: 'S', school: 'SK Jalan Bintang', position: 'Guru', sessions: [ { status: 'Selesai', date: '2024-03-15'}, { status: 'Selesai', date: '2024-04-01'}, { status: 'Selesai', date: '2024-04-20'} ] },
+                { id: 2, name: 'Mohd Fairuz', avatar: 'M', school: 'SK Riam Batu Dua', position: 'Juruteknik Komputer', sessions: [ { status: 'Selesai', date: '2024-05-10'}, { status: 'Belum Selesai', date: '2024-05-25'}, { status: 'Akan Datang', date: ''} ] },
+                { id: 3, name: 'Lee Chong Wei', avatar: 'L', school: 'SMK Lutong', position: 'Pembantu Tadbir', sessions: [ { status: 'Belum Mula', date: ''}, { status: 'Akan Datang', date: ''}, { status: 'Akan Datang', date: ''} ] },
+                { id: 4, name: 'Aina Abdul', avatar: 'A', school: 'SK Tudan', position: 'Guru Muzik', sessions: [ { status: 'Selesai', date: '2024-06-01'}, { status: 'Akan Datang', date: ''}, { status: 'Akan Datang', date: ''} ] },
+            ];
+            
+            const accordionData = [
+                { title: '1.0 Pengenalan Coaching', content: ['1.1 Pengenalan Coaching', '1.2 Konsep & Peranan', '1.3 Proses Coaching', '1.4 Model Coaching', '1.5 Kemahiran Coaching'], icon: 'fa-book-open' },
+                { title: '2.0 Panduan Proses Coaching', content: ['2.1 Etika Coaching', '2.2 Perancangan', '2.3 Pelaksanaan', '2.4 Rekod Hasil'], icon: 'fa-sticky-note' }
+            ];
+
+            const pageTitles = {
+                'dashboard': 'Dashboard',
+                'senarai': 'Senarai Penuh Coachee',
+                'sesi-bimbingan': 'Sesi Bimbingan',
+                'edit-profil': 'Edit Profil Saya'
+            };
+
+            // --- DOM ELEMENTS ---
+            const pageTitleEl = document.getElementById('page-title');
+            const dashboardCoacheeListEl = document.getElementById('dashboard-coachee-list');
+            const fullCoacheeListTableEl = document.getElementById('full-coachee-list-table');
+            const accordionContainerEl = document.getElementById('accordion-container');
+            const searchInputEl = document.getElementById('searchInput');
+
+            // --- STATUS BADGE HELPER ---
+            const getStatusBadge = (status) => {
+                const statuses = {
+                    'Selesai': 'bg-green-100 text-green-800',
+                    'Belum Selesai': 'bg-yellow-100 text-yellow-800',
+                    'Belum Mula': 'bg-red-100 text-red-800',
+                    'Akan Datang': 'bg-gray-100 text-gray-800'
+                };
+                return `<span class="${statuses[status] || statuses['Akan Datang']} text-xs font-medium px-2.5 py-0.5 rounded-full">${status}</span>`;
+            };
+            
+            // --- RENDER FUNCTIONS ---
+            function renderDashboard() {
+                // Render Stats
+                const statsContainer = document.querySelector('#dashboard-page .grid');
+                const totalCoachees = coacheeData.length;
+                const completedCoachees = coacheeData.filter(c => c.sessions.every(s => s.status === 'Selesai')).length;
+                const inProgressCoachees = totalCoachees - completedCoachees;
+                const completionPercentage = totalCoachees > 0 ? ((completedCoachees / totalCoachees) * 100).toFixed(1) : 0;
+
+                statsContainer.innerHTML = `
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 flex items-center justify-between"><div><div class="text-sm font-bold text-blue-500 uppercase">Jumlah Coachee</div><div class="text-2xl font-bold mt-1">${totalCoachees} Orang</div></div><i class="fas fa-users fa-2x text-gray-200"></i></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500 flex items-center justify-between"><div><div class="text-sm font-bold text-yellow-500 uppercase">Dalam Proses</div><div class="text-2xl font-bold mt-1">${inProgressCoachees} Orang</div></div><i class="fas fa-comments fa-2x text-gray-200"></i></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 flex items-center justify-between"><div><div class="text-sm font-bold text-green-500 uppercase">Selesai Penuh</div><div class="text-2xl font-bold mt-1">${completedCoachees} Orang</div></div><i class="fas fa-thumbs-up fa-2x text-gray-200"></i></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-teal-500">
+                        <div class="text-sm font-bold text-teal-500 uppercase">Peratusan Selesai</div>
+                        <div class="flex items-center mt-2"><div class="text-2xl font-bold mr-3">${completionPercentage}%</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-teal-500 h-2.5 rounded-full" style="width: ${completionPercentage}%"></div></div></div>
+                    </div>`;
+
+                // Render Coachee List (Top 3)
+                dashboardCoacheeListEl.innerHTML = coacheeData.slice(0, 3).map(coachee => {
+                     const currentStatus = coachee.sessions.find(s => s.status !== 'Selesai' && s.status !== 'Akan Datang') || coachee.sessions.find(s => s.status === 'Akan Datang') || { status: 'Selesai' };
+                     return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3 font-medium flex items-center"><img src="https://placehold.co/32x32/94a3b8/ffffff?text=${coachee.avatar}" class="w-8 h-8 rounded-full mr-3">${coachee.name}</td>
+                            <td class="p-3 text-gray-600">${coachee.school}</td>
+                            <td class="p-3">${getStatusBadge(currentStatus.status)}</td>
+                            <td class="p-3 text-right"><button class="text-indigo-600 hover:underline font-semibold text-xs go-to-sesi" data-id="${coachee.id}">LIHAT</button></td>
+                        </tr>`;
+                }).join('');
+                
+                // BAHAN RUJUKAN UPDATED HERE
+                accordionContainerEl.innerHTML = accordionData.map(item => `
+                    <div class="border rounded-lg overflow-hidden">
+                        <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold hover:bg-gray-50 transition">
+                            <span>${item.title}</span>
+                            <i class="fas fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div class="accordion-content bg-gray-50/70">
+                            <div class="p-4 space-y-2">
+                                ${item.content.map(li => `
+                                    <a href="#" class="flex items-center p-2 rounded-md hover:bg-indigo-100/50 transition-colors group">
+                                        <i class="fas fa-file-alt fa-fw text-indigo-400 group-hover:text-indigo-600"></i>
+                                        <span class="ml-3 text-sm text-gray-700">${li}</span>
+                                    </a>
+                                `).join('')}
+                            </div>
+                            <div class="px-4 pb-4 mt-2">
+                                <a href="#" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 font-semibold shadow-sm transition">
+                                    <i class="fas ${item.icon} mr-2"></i>
+                                    <span>Lihat Panduan Penuh</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>`).join('');
+                addAccordionListeners();
+            }
+
+            function renderCoacheeListPage(data) {
+                fullCoacheeListTableEl.innerHTML = data.map((coachee, index) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 text-gray-600">${index + 1}</td>
+                        <td class="p-3 font-medium flex items-center"><img src="https://placehold.co/32x32/94a3b8/ffffff?text=${coachee.avatar}" class="w-8 h-8 rounded-full mr-3">${coachee.name}</td>
+                        <td class="p-3 text-gray-600">${coachee.school}</td>
+                        ${coachee.sessions.map(session => `<td class="p-3">${getStatusBadge(session.status)}<br><small class="text-gray-400">${session.date}</small></td>`).join('')}
+                        <td class="p-3 text-center"><button class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-indigo-200 go-to-sesi" data-id="${coachee.id}">Urus Sesi</button></td>
+                    </tr>`).join('');
+            }
+            
+            function renderSesiPage(coacheeId) {
+                const coachee = coacheeData.find(c => c.id == coacheeId);
+                if (!coachee) return;
+                
+                const sesiPageContainer = document.getElementById('sesi-bimbingan-page');
+                sesiPageContainer.innerHTML = `
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h2 class="text-xl font-bold mb-1">Maklumat Coachee</h2>
+                        <p class="text-gray-500 mb-4">Borang Pelaporan Bimbingan untuk ${coachee.name}</p>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-6 bg-gray-50 p-4 rounded-lg">
+                            <p><strong>Nama Pegawai:</strong> ${coachee.name}</p>
+                            <p><strong>Stesen Kerja:</strong> ${coachee.school}</p>
+                            <p><strong>Jawatan:</strong> ${coachee.position}</p>
+                            <p><strong>Emel:</strong> ${coachee.name.toLowerCase().replace(' ', '.')}@example.com</p>
+                        </div>
+
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                ${coachee.sessions.map((s, i) => `<a href="#" class="tab-link ${i===0 ? 'active' : ''} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="${i+1}">Sesi ${i+1}</a>`).join('')}
+                            </nav>
+                        </div>
+
+                        <div class="mt-6">
+                            ${coachee.sessions.map((s, i) => `
+                            <div id="tab-${i+1}-content" class="tab-content ${i > 0 ? 'hidden':''}">
+                                <form class="space-y-6">
+                                     <h3 class="font-bold text-lg text-gray-700">Borang Pelaporan Bimbingan Sesi ${i+1}</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Tarikh</label><input type="date" value="${s.date}" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Masa Bermula</label><input type="time" value="09:30" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Isu / Topik (Model GROW)</label><textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Refleksi Kendiri Coach</label><textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea></div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Status Sesi</label><select class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option>${s.status}</option><option>Selesai</option><option>Belum Selesai</option></select></div>
+                                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Janji Temu Seterusnya</label><input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                    </div>
+                                    <div class="flex justify-end space-x-4 pt-4 border-t"><button type="button" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold">Isi Semula</button><button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-semibold">Hantar</button></div>
+                                </form>
+                            </div>`).join('')}
+                        </div>
+                    </div>
+                `;
+                addTabListeners('#sesi-bimbingan-page');
+            }
+
+            // --- NAVIGATION & EVENT LISTENERS ---
+            function switchPage(pageId, coacheeId = null) {
+                document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+                document.getElementById(pageId + '-page').classList.remove('hidden');
+
+                document.querySelectorAll('.sidebar-link').forEach(l => {
+                    l.classList.remove('active');
+                    if (l.dataset.page === pageId) l.classList.add('active');
+                });
+                
+                pageTitleEl.textContent = pageTitles[pageId] || 'Sistem Coaching';
+
+                if (pageId === 'sesi-bimbingan' && coacheeId) {
+                   renderSesiPage(coacheeId);
+                }
+            }
+
+            function addAccordionListeners() {
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', function() {
+                        const content = this.nextElementSibling;
+                        const icon = this.querySelector('i');
+                        const isOpen = content.style.maxHeight;
+
+                        // Close all first
+                        document.querySelectorAll('.accordion-content').forEach(c => {
+                             c.style.maxHeight = null;
+                             c.previousElementSibling.querySelector('i').classList.remove('rotate-180');
+                        });
+                        
+                        if (!isOpen) {
+                            content.style.maxHeight = content.scrollHeight + "px";
+                            icon.classList.add('rotate-180');
+                        }
+                    });
+                });
+            }
+            
+            function addTabListeners(containerSelector) {
+                const container = document.querySelector(containerSelector);
+                container.querySelectorAll('.tab-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const tabId = this.dataset.tab;
+                        container.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                        container.querySelector('#tab-' + tabId + '-content').classList.remove('hidden');
+                        container.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                });
+            }
+
+            // --- INITIALIZATION ---
+            renderDashboard();
+            renderCoacheeListPage(coacheeData);
+
+            document.querySelector('.sidebar').addEventListener('click', e => {
+                if (e.target.closest('.sidebar-link')) {
+                    e.preventDefault();
+                    switchPage(e.target.closest('.sidebar-link').dataset.page);
+                }
+            });
+
+            document.body.addEventListener('click', e => {
+                 if (e.target.closest('.go-to-sesi')) {
+                    e.preventDefault();
+                    const coacheeId = e.target.closest('.go-to-sesi').dataset.id;
+                    switchPage('sesi-bimbingan', coacheeId);
+                }
+            });
+
+            searchInputEl.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredData = coacheeData.filter(coachee => 
+                    coachee.name.toLowerCase().includes(searchTerm) ||
+                    coachee.school.toLowerCase().includes(searchTerm)
+                );
+                renderCoacheeListPage(filteredData);
+            });
+        });
+    </script>
+</body>
+
+</html>
+
